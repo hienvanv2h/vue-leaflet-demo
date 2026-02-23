@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import LeafletMap from './components/LeafletMap.vue'
-import CustomMap from './components/CustomMap.vue'
 import EgryiaMap from './components/EgryiaMap.vue'
+import EgryiaMapEditor from './components/EgryiaMapEditor.vue'
 
 const center = ref<[number, number]>([21.0285, 105.8542])
 const zoom = ref(13)
@@ -20,7 +20,7 @@ const zoom = ref(13)
         </p>
       </header>
 
-      <main class="max-w-6xl mx-auto space-y-8">
+      <main class="max-w-7xl mx-auto space-y-8">
         <!-- OpenStreetMap Demo -->
         <div class="bg-white rounded-xl shadow-xl p-6">
           <div class="mb-4">
@@ -32,11 +32,7 @@ const zoom = ref(13)
             </p>
           </div>
 
-          <LeafletMap
-            :center="center"
-            :zoom="zoom"
-            height="600px"
-          />
+          <LeafletMap :center="center" :zoom="zoom" height="600px" />
 
           <div class="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
             <div class="bg-blue-50 p-4 rounded-lg">
@@ -54,20 +50,6 @@ const zoom = ref(13)
           </div>
         </div>
 
-        <!-- Ragnasia Fantasy Map -->
-        <!-- <div class="bg-gradient-to-br from-amber-50 to-orange-50 rounded-xl shadow-xl p-6">
-          <div class="mb-4">
-            <h2 class="text-2xl font-semibold text-amber-900 mb-2 flex items-center gap-2">
-              🗺️ Ragnasia Fantasy Map
-            </h2>
-            <p class="text-amber-700 text-sm">
-              Custom map tiles từ ảnh 2048x2048, 4 zoom levels (0-3), 85 tiles
-            </p>
-          </div>
-
-          <CustomMap height="400px" />
-        </div> -->
-
         <!-- Egryia Fantasy Map -->
         <div class="bg-gradient-to-br from-purple-50 to-indigo-50 rounded-xl shadow-xl p-6">
           <div class="mb-4">
@@ -81,6 +63,8 @@ const zoom = ref(13)
 
           <EgryiaMap height="600px" />
         </div>
+
+
       </main>
     </div>
   </div>
