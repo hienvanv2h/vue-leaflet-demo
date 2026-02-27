@@ -31,6 +31,26 @@ export function makeLandmarkIcon(type: string): L.DivIcon {
 }
 
 // ---------------------------------------------------------------------------
+// Vehicle (GPS tracking) icon — orange circle with directional arrow
+// ---------------------------------------------------------------------------
+export function makeVehicleIcon(heading: number, color = '#E65100'): L.DivIcon {
+  return L.divIcon({
+    html: `<div style="width:30px;height:30px;background:${color};border-radius:50%;
+                       border:2px solid #fff;display:flex;align-items:center;
+                       justify-content:center;box-shadow:0 2px 6px rgba(0,0,0,.5)">
+             <span class="material-symbols-outlined"
+                   style="font-size:16px;color:#fff;line-height:1;user-select:none;
+                          display:block;transform:rotate(${heading}deg)"
+             >navigation</span>
+           </div>`,
+    className: '',
+    iconSize:    [30, 30],
+    iconAnchor:  [15, 15],
+    popupAnchor: [0, -18],
+  })
+}
+
+// ---------------------------------------------------------------------------
 // Crane icon
 // ---------------------------------------------------------------------------
 export const CRANE_TYPES = new Set(['crane', 'qc-crane'])
