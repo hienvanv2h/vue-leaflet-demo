@@ -29,7 +29,9 @@ export function useVehicleTracking(getMap: () => LeafletMap | null) {
   const selectedVehicleId   = ref<string | null>(null)
   const visible             = ref(true)
 
+  interface MarkerEntry { marker: L.Marker; heading: number; speed: number | null; color: string }
   const markerLayer = L.layerGroup()
+  const markerMap   = new Map<string, MarkerEntry>()   // vehicleId → { marker, last rendered heading/color }
   let trackPolyline: L.Polyline | null = null
   let timer: ReturnType<typeof setInterval> | null = null
 
@@ -54,20 +56,56 @@ export function useVehicleTracking(getMap: () => LeafletMap | null) {
       if (!visible.value) return   // keep data, skip map update
 
       const knownIds = new Set(registeredVehicles.value.map(v => v.vehicleId))
+      const seenIds  = new Set<string>()
 
-      markerLayer.clearLayers()
       for (const v of data) {
-        const known  = knownIds.has(v.vehicleId)
-        const color  = known ? '#E65100' : '#757575'
-        const marker = L.marker([v.lat, v.lng], {
-          icon: makeVehicleIcon(v.heading ?? 0, color),
-          zIndexOffset: 500,
-        })
-        marker.bindTooltip(v.vehicleId, { permanent: false, direction: 'top', offset: [0, -16] })
-        marker.bindPopup(makeVehiclePopup(v))
-        marker.on('click', () => selectVehicle(v.vehicleId))
-        markerLayer.addLayer(marker)
+        seenIds.add(v.vehicleId)
+        const color   = knownIds.has(v.vehicleId) ? '#E65100' : '#757575'
+        const heading = v.heading ?? 0
+
+        const entry = markerMap.get(v.vehicleId)
+        if (entry) {
+          // Update only what changed
+          const ll = entry.marker.getLatLng()
+          if (ll.lat !== v.lat || ll.lng !== v.lng)
+            entry.marker.setLatLng([v.lat, v.lng])
+
+          const headingChanged = entry.heading !== heading
+          const colorChanged   = entry.color   !== color
+          const speedChanged   = entry.speed   !== v.speed
+
+          if (headingChanged || colorChanged) {
+            entry.marker.setIcon(makeVehicleIcon(heading, color))
+            entry.heading = heading
+            entry.color   = color
+          }
+
+          if (headingChanged || speedChanged) {
+            entry.marker.setPopupContent(makeVehiclePopup(v))
+            entry.speed = v.speed
+          }
+        } else {
+          // New vehicle — create marker once
+          const marker = L.marker([v.lat, v.lng], {
+            icon: makeVehicleIcon(heading, color),
+            zIndexOffset: 500,
+          })
+          marker.bindTooltip(v.vehicleId, { permanent: false, direction: 'top', offset: [0, -16] })
+          marker.bindPopup(makeVehiclePopup(v))
+          marker.on('click', () => selectVehicle(v.vehicleId))
+          markerMap.set(v.vehicleId, { marker, heading, speed: v.speed, color })
+          markerLayer.addLayer(marker)
+        }
       }
+
+      // Remove markers for vehicles no longer in data
+      for (const [id, entry] of markerMap) {
+        if (!seenIds.has(id)) {
+          markerLayer.removeLayer(entry.marker)
+          markerMap.delete(id)
+        }
+      }
+
       if (!map.hasLayer(markerLayer)) markerLayer.addTo(map)
     } catch { /* backend unavailable — fail silently */ }
   }
@@ -110,6 +148,7 @@ export function useVehicleTracking(getMap: () => LeafletMap | null) {
     } else {
       map.removeLayer(markerLayer)
       markerLayer.clearLayers()
+      markerMap.clear()   // markers removed from DOM, reset cache
     }
   }
 
@@ -126,6 +165,7 @@ export function useVehicleTracking(getMap: () => LeafletMap | null) {
     const map = getMap()
     if (map) map.removeLayer(markerLayer)
     markerLayer.clearLayers()
+    markerMap.clear()
   }
 
   onUnmounted(stop)

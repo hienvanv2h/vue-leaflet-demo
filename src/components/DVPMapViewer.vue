@@ -474,8 +474,8 @@ const totalFeatures = () => Object.values(featureCounts).reduce((a, b) => a + b,
         <div v-if="pendingPoint" class="mt-2 p-2 bg-orange-50 border border-orange-200 rounded">
           <div class="text-xs font-semibold text-orange-800 mb-1">Xác nhận điểm?</div>
           <div class="text-xs text-gray-600 font-mono leading-relaxed">
-            {{ pendingPoint.lat.toFixed(6) }}<br>
-            {{ pendingPoint.lng.toFixed(6) }}
+            lat: {{ pendingPoint.lat.toFixed(6) }}<br>
+            lng: {{ pendingPoint.lng.toFixed(6) }}
           </div>
           <div class="flex gap-1.5 mt-2">
             <button @click="saveMockPoint"
@@ -490,7 +490,7 @@ const totalFeatures = () => Object.values(featureCounts).reduce((a, b) => a + b,
         </div>
 
         <!-- Stats + clear -->
-        <template v-if="mockPointCount > 0">
+        <template v-if="mockPointCount > 0 && pendingMarker">
           <div class="mt-2.5 text-xs text-gray-500">
             Đã thêm: <b class="text-gray-700">{{ mockPointCount }}</b> điểm
           </div>
